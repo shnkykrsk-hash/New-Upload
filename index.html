@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <style>
   :root {
     box-sizing: border-box;
@@ -301,36 +302,33 @@
       <ul class="packs">
         <li>
           <div class="info"><div class="name">Quick pack</div><div class="desc">2 video ideas with titles &amp; tags</div></div>
-          <div class="buy"><span class="price">₹20</span><button type="button" class="btn unlock" data-pack="Quick pack" data-price="20" data-what="2 video ideas" disabled>Unlock</button></div>
+          <div class="buy"><span class="price">₹20</span><button type="button" class="btn unlock" data-pack="quick" data-label="Quick pack" data-price="20" disabled>Unlock</button></div>
         </li>
         <li>
           <div class="info"><div class="name">Week pack</div><div class="desc">7 video ideas, a full week of uploads planned</div></div>
-          <div class="buy"><span class="price">₹49</span><button type="button" class="btn unlock" data-pack="Week pack" data-price="49" data-what="7 video ideas" disabled>Unlock</button></div>
+          <div class="buy"><span class="price">₹49</span><button type="button" class="btn unlock" data-pack="week" data-label="Week pack" data-price="49" disabled>Unlock</button></div>
         </li>
         <li>
           <div class="info"><div class="name">Bumper pack</div><div class="desc">15 video ideas in one go</div></div>
-          <div class="buy"><span class="price">₹99</span><button type="button" class="btn unlock" data-pack="Bumper pack" data-price="99" data-what="15 video ideas" disabled>Unlock</button></div>
+          <div class="buy"><span class="price">₹99</span><button type="button" class="btn unlock" data-pack="bumper" data-label="Bumper pack" data-price="99" disabled>Unlock</button></div>
         </li>
       </ul>
 
-      <p class="locked-line">🔒 More ideas ready. Unlock a pack above to reveal them.</p>
+      <p class="locked-line" id="locked-line" hidden>🔒 More ideas ready. Unlock a pack above to reveal them.</p>
+      <p class="msg" id="entitlement-msg" role="status" aria-live="polite"></p>
 
-      <div class="ideas">
-        <div class="idea">
-          <div class="top"><span class="tag-label">Idea</span><span aria-label="Locked">🔒</span></div>
-          <h3>A specific video idea based on your channel</h3>
-          <div class="chips"><span>#tag</span><span>#tag</span><span>#tag</span></div>
-          <p>Reasoning based on what's working on your channel.</p>
-          <p class="fine">Data-based suggestion, not a guaranteed result. Performance also depends on how you make and present the video.</p>
-        </div>
-        <div class="idea">
-          <div class="top"><span class="tag-label">Idea</span><span aria-label="Locked">🔒</span></div>
-          <h3>Another tailored video idea</h3>
-          <div class="chips"><span>#tag</span><span>#tag</span></div>
-          <p>Full title, tags and reasoning unlock with any pack.</p>
-          <p class="fine">Data-based suggestion, not a guaranteed result. Performance also depends on how you make and present the video.</p>
+      <div class="feedback-panel" id="feedback-panel" hidden style="border:1px solid #e2e2e2;border-radius:10px;padding:16px;margin:12px 0;">
+        <h3 style="margin:0 0 6px;">Payments launch soon 🚀</h3>
+        <p style="margin:0 0 10px;">We're testing New Upload with a small group first — paid packs aren't live yet. Tell us what you think so far, and you'll be among the first to get access when unlocks open.</p>
+        <textarea id="feedback-text" rows="3" placeholder="What did you like? What's missing or confusing?" style="width:100%;box-sizing:border-box;padding:8px;border-radius:8px;border:1px solid #ccc;font-family:inherit;"></textarea>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
+          <button type="button" class="btn" id="feedback-submit">Send feedback</button>
+          <span id="feedback-status" role="status" aria-live="polite"></span>
         </div>
       </div>
+
+      <div class="ideas" id="ideas-list"></div>
+      <div class="trending-hashtags" id="trending-hashtags" style="margin-top:12px;"></div>
     </div>
 
     <div class="sect">
@@ -379,13 +377,6 @@
   <button type="button" class="link-btn" data-go="refund">Refund policy</button>
 </footer>
 
-<dialog id="pay" aria-labelledby="pay-title">
-  <h2 id="pay-title">Quick pack, ₹20</h2>
-  <p id="pay-desc">Scan the QR to pay. Your pack unlocks once the payment is verified.</p>
-  <div class="qr" role="img" aria-label="Payment QR placeholder">Payment QR will appear here</div>
-  <div class="dlg-actions"><button type="button" class="btn ghost" id="pay-close">Close</button></div>
-</dialog>
-
 <script>
 (function () {
   var root = document.documentElement;
@@ -426,45 +417,204 @@
     el.addEventListener("click", function () { show(el.getAttribute("data-go")); });
   });
 
-  /* analyze (preview only) */
+  /* ---- backend-connected idea flow ---- */
+  // Flip this to true when Razorpay is ready to go live. While false, unlock
+  // buttons collect feedback instead of starting a real payment — everything
+  // on the payment side (api/create-order.js, api/razorpay-webhook.js, etc.)
+  // stays in the project untouched, ready to switch on later.
+  var PAYMENTS_ENABLED = false;
   var channel = document.getElementById("channel");
   var msg = document.getElementById("msg");
+  var ideasList = document.getElementById("ideas-list");
+  var trendingHashtagsEl = document.getElementById("trending-hashtags");
+  var lockedLine = document.getElementById("locked-line");
+  var entitlementMsg = document.getElementById("entitlement-msg");
+  var currentChannelKey = null;
+
+  function ideaCard(idea) {
+    var chips = idea.tags.map(function (t) { return "<span>" + t + "</span>"; }).join("");
+    var thumbs = (idea.thumbnails || [])
+      .map(function (src) {
+        return '<img src="' + src + '" alt="Thumbnail concept" style="width:150px;height:84px;object-fit:cover;border-radius:8px;margin:0 6px 6px 0;">';
+      })
+      .join("");
+    return (
+      '<div class="idea">' +
+        '<div class="top"><span class="tag-label">Idea</span></div>' +
+        "<h3>" + idea.title + "</h3>" +
+        '<div class="thumb-row" style="display:flex;flex-wrap:wrap;margin:8px 0;">' + thumbs + "</div>" +
+        '<div class="chips">' + chips + "</div>" +
+        "<p>" + idea.reasoning + "</p>" +
+        '<p class="fine">Thumbnails are layout/color concepts to react to, not final art. Data-based suggestion, not a guaranteed result — performance also depends on how you make and present the video.</p>' +
+      "</div>"
+    );
+  }
+
+  function renderIdeas(ideas, trendingHashtags) {
+    ideasList.innerHTML = ideas.map(ideaCard).join("");
+    if (trendingHashtags && trendingHashtags.length) {
+      trendingHashtagsEl.innerHTML =
+        '<p style="margin:0 0 6px;font-weight:600;">Trending for your niche</p><div class="chips">' +
+        trendingHashtags.map(function (t) { return "<span>" + t + "</span>"; }).join("") +
+        "</div>";
+    } else {
+      trendingHashtagsEl.innerHTML = "";
+    }
+  }
+
+  function setUnlocksEnabled(enabled) {
+    Array.prototype.forEach.call(unlocks, function (b) {
+      b.disabled = !enabled || !ack.checked;
+    });
+  }
+
   document.getElementById("analyze").addEventListener("click", function () {
-    if (!channel.value.trim()) {
+    var url = channel.value.trim();
+    if (!url) {
       msg.textContent = "Paste your YouTube channel link first.";
       channel.focus();
-    } else {
-      msg.textContent = "Preview only. The analysis runs on the live site.";
+      return;
     }
+    msg.textContent = "Checking your channel...";
+    fetch("/api/free-check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ channelUrl: url })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        currentChannelKey = data.channelKey || currentChannelKey;
+        setUnlocksEnabled(!!currentChannelKey);
+        if (data.allowed) {
+          msg.textContent = "Here's what we found for your channel:";
+          renderIdeas(data.ideas, data.trendingHashtags);
+          lockedLine.hidden = false;
+        } else if (data.reason === "free_used") {
+          msg.textContent = "Free analysis for this channel is already used. Unlock a pack below for more ideas.";
+          lockedLine.hidden = false;
+        } else {
+          msg.textContent = data.error || "Something went wrong. Try again.";
+        }
+      })
+      .catch(function () {
+        msg.textContent = "Could not reach the server. Try again.";
+      });
   });
 
-  /* acknowledgement gates the unlock buttons */
+  /* acknowledgement gates the unlock buttons (in addition to having a channel checked) */
   var ack = document.getElementById("ack");
   var hint = document.getElementById("ack-hint");
   var unlocks = document.querySelectorAll(".unlock");
-  function sync() {
-    Array.prototype.forEach.call(unlocks, function (b) { b.disabled = !ack.checked; });
+  ack.addEventListener("change", function () {
     hint.hidden = ack.checked;
-  }
-  ack.addEventListener("change", sync);
-  sync();
+    setUnlocksEnabled(!!currentChannelKey);
+  });
+  hint.hidden = ack.checked;
+  setUnlocksEnabled(false);
 
-  /* payment dialog */
-  var dlg = document.getElementById("pay");
-  var title = document.getElementById("pay-title");
-  var desc = document.getElementById("pay-desc");
+  /* payment: create a real order, open Razorpay checkout, then poll for the webhook to confirm */
+  function pollEntitlement(attemptsLeft) {
+    if (attemptsLeft <= 0) {
+      entitlementMsg.textContent = "Payment received. If ideas don't appear in a minute, refresh the page.";
+      return;
+    }
+    fetch("/api/check-entitlement?channelKey=" + encodeURIComponent(currentChannelKey))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.ideasRemaining > 0) {
+          return fetch("/api/redeem-ideas", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ channelKey: currentChannelKey })
+          })
+            .then(function (r) { return r.json(); })
+            .then(function (redeemed) {
+              if (redeemed.redeemed) {
+                renderIdeas(redeemed.ideas, redeemed.trendingHashtags);
+                lockedLine.hidden = true;
+                entitlementMsg.textContent = "Unlocked. Here are your ideas.";
+              }
+            });
+        }
+        setTimeout(function () { pollEntitlement(attemptsLeft - 1); }, 2000);
+      })
+      .catch(function () {
+        setTimeout(function () { pollEntitlement(attemptsLeft - 1); }, 2000);
+      });
+  }
+
+  var feedbackPanel = document.getElementById("feedback-panel");
+  var feedbackText = document.getElementById("feedback-text");
+  var feedbackStatus = document.getElementById("feedback-status");
+
+  document.getElementById("feedback-submit").addEventListener("click", function () {
+    var text = feedbackText.value.trim();
+    if (!text) {
+      feedbackStatus.textContent = "Likho kuch feedback pehle.";
+      return;
+    }
+    feedbackStatus.textContent = "Sending...";
+    fetch("/api/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ channelKey: currentChannelKey, message: text })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function () {
+        feedbackStatus.textContent = "Thanks! Feedback received.";
+        feedbackText.value = "";
+      })
+      .catch(function () {
+        feedbackStatus.textContent = "Could not send. Try again.";
+      });
+  });
+
   Array.prototype.forEach.call(unlocks, function (b) {
     b.addEventListener("click", function () {
-      title.textContent = b.getAttribute("data-pack") + ", \u20B9" + b.getAttribute("data-price");
-      desc.textContent = "Scan the QR to pay for " + b.getAttribute("data-what") + ". Your pack unlocks once the payment is verified.";
-      if (typeof dlg.showModal === "function") { dlg.showModal(); } else { dlg.setAttribute("open", ""); }
+      if (!currentChannelKey) {
+        msg.textContent = "Analyze your channel first, then unlock a pack.";
+        return;
+      }
+
+      if (!PAYMENTS_ENABLED) {
+        feedbackPanel.hidden = false;
+        feedbackPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+        feedbackText.focus();
+        return;
+      }
+
+      entitlementMsg.textContent = "Starting payment...";
+      fetch("/api/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ channelKey: currentChannelKey, pack: b.getAttribute("data-pack") })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (order) {
+          if (!order.orderId) {
+            entitlementMsg.textContent = order.error || "Could not start payment.";
+            return;
+          }
+          var rzp = new Razorpay({
+            key: order.keyId,
+            amount: order.amount,
+            currency: "INR",
+            name: "New Upload",
+            description: order.packLabel,
+            order_id: order.orderId,
+            handler: function () {
+              entitlementMsg.textContent = "Payment received, verifying...";
+              pollEntitlement(15);
+            },
+            theme: { color: "#1B5FC4" }
+          });
+          rzp.open();
+        })
+        .catch(function () {
+          entitlementMsg.textContent = "Could not start payment. Try again.";
+        });
     });
   });
-  function closeDlg() {
-    if (typeof dlg.close === "function") { dlg.close(); } else { dlg.removeAttribute("open"); }
-  }
-  document.getElementById("pay-close").addEventListener("click", closeDlg);
-  dlg.addEventListener("click", function (e) { if (e.target === dlg) { closeDlg(); } });
 })();
 </script>
 </body>
