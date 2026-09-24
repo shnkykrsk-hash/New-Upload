@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>API test</title>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: 40px auto; padding: 0 16px; }
+    button { padding: 12px 20px; font-size: 16px; cursor: pointer; }
+    pre { background: #f4f4f4; padding: 16px; white-space: pre-wrap; word-break: break-word; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h2>Gemini API test</h2>
+  <button id="btn">Test /api/ideas</button>
+  <pre id="out">Result yahan dikhega...</pre>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const out = document.getElementById('out');
+
+    btn.addEventListener('click', async () => {
+      out.textContent = 'Loading... (5-15 second lag sakte hain)';
+      try {
+        const r = await fetch('/api/ideas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            channelName: 'Test Channel',
+            recentTitles: ['How I edit videos', 'My gear tour']
+          })
+        });
+        const text = await r.text();
+        out.textContent = 'Status: ' + r.status + '\n\n' + text;
+      } catch (e) {
+        out.textContent = 'Error: ' + e;
+      }
+    });
+  </script>
+</body>
+</html>
