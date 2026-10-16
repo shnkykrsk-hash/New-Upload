@@ -1,0 +1,89 @@
+/* ===== New Upload motion ===== */
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes gradMove{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+@keyframes floaty{0%,100%{translate:0 0}50%{translate:0 -12px}}
+@keyframes blob{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(34px,26px) scale(1.15)}}
+@keyframes blob2{0%,100%{transform:translate(0,0) scale(1.1)}50%{transform:translate(-30px,20px) scale(.95)}}
+@keyframes shine{0%{transform:translateX(-130%)}60%,100%{transform:translateX(130%)}}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(255,106,77,.55)}100%{box-shadow:0 0 0 14px rgba(255,106,77,0)}}
+@keyframes tagPop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes lockBob{0%,100%{translate:0 0}50%{translate:0 -5px}}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* hero intro + floating blobs */
+main{position:relative;overflow-x:clip}
+.hero{position:relative}
+.hero>*:not(.mock){animation:fadeUp .8s cubic-bezier(.2,.7,.2,1) both}
+.hero>*:nth-child(2){animation-delay:.1s}
+.hero>*:nth-child(3){animation-delay:.2s}
+.hero>*:nth-child(4){animation-delay:.3s}
+.hero>*:nth-child(5){animation-delay:.4s}
+.hero::before,.hero::after{content:"";position:absolute;border-radius:50%;filter:blur(45px);pointer-events:none;z-index:-1}
+.hero::before{width:320px;height:320px;left:2%;top:-30px;background:radial-gradient(circle,rgba(255,77,77,.28),transparent 70%);animation:blob 9s ease-in-out infinite}
+.hero::after{width:360px;height:360px;right:0;top:80px;background:radial-gradient(circle,rgba(255,138,61,.22),transparent 70%);animation:blob2 11s ease-in-out infinite}
+.hero h1 .grad{background-image:linear-gradient(90deg,#ff4d4d,#ff8a3d,#ffcf5a,#ff4d4d);background-size:200% 100%;animation:gradMove 5s linear infinite}
+.mock{animation:floaty 6s ease-in-out infinite}
+
+/* floating chips on the home hero */
+@keyframes drift{0%,100%{translate:0 0;rotate:-2deg}50%{translate:0 -18px;rotate:2deg}}
+.hero>.floaters{animation:none;position:absolute;inset:0;pointer-events:none;z-index:0}
+.chip{position:absolute;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.35);white-space:nowrap;animation:drift 7s ease-in-out infinite}
+.chip.c1{left:2%;top:96px}
+.chip.c2{right:3%;top:64px;animation-delay:-2s}
+.chip.c3{left:6%;top:300px;animation-delay:-4s}
+.chip.c4{right:5%;top:290px;animation-delay:-1s}
+.chip.c5{left:15%;top:190px;animation-delay:-5s}
+.chip.c6{right:14%;top:180px;animation-delay:-3s}
+@media(max-width:1000px){.chip{display:none}}
+
+/* logo + step rings */
+.logo i{animation:ring 2.4s ease-out infinite}
+.step-n{animation:ring 2.8s ease-out infinite}
+
+/* nav underline */
+.links a:not(.btn){position:relative}
+.links a:not(.btn)::after{content:"";position:absolute;left:0;bottom:-5px;height:2px;width:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transform:scaleX(0);transform-origin:left;transition:transform .3s}
+.links a:not(.btn):hover::after,.links a.active::after{transform:scaleX(1)}
+
+/* buttons */
+.btn{position:relative;overflow:hidden}
+.btn::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);transform:translateX(-130%);animation:shine 3.6s ease-in-out infinite;pointer-events:none}
+.btn.ghost::after,.btn[disabled]::after{display:none}
+.btn:active{transform:scale(.97)}
+#unlock{animation:ring 2s ease-out infinite}
+
+/* cards hover */
+.card{transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
+.card:hover{transform:translateY(-4px);border-color:#3a4160;box-shadow:0 14px 34px rgba(0,0,0,.35)}
+.stat-card{transition:transform .25s ease,border-color .25s ease}
+.stat-card:hover{transform:translateY(-3px);border-color:#3a4160}
+details{transition:border-color .25s ease}
+details:hover{border-color:#3a4160}
+.tag{transition:transform .2s ease}
+.tag:hover{transform:scale(1.08)}
+
+/* scroll reveal (class added by motion.js) */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* results entering on the ideas page */
+#stats.enter>.stat-card,#ideas.enter>.idea{animation:fadeUp .6s cubic-bezier(.2,.7,.2,1) both}
+#stats.enter>.stat-card:nth-child(2){animation-delay:.07s}
+#stats.enter>.stat-card:nth-child(3){animation-delay:.14s}
+#stats.enter>.stat-card:nth-child(4){animation-delay:.21s}
+#ideas.enter>.idea:nth-child(2){animation-delay:.18s}
+.idea .tag{animation:tagPop .45s ease both}
+.idea .tag:nth-of-type(1){animation-delay:.1s}
+.idea .tag:nth-of-type(2){animation-delay:.2s}
+.idea .tag:nth-of-type(3){animation-delay:.3s}
+.idea .tag:nth-of-type(4){animation-delay:.4s}
+.locked .over{animation:lockBob 2s ease-in-out infinite}
+
+/* toast + scroll progress */
+.toast{animation:toastIn .35s ease both}
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));z-index:60;transition:width .1s linear}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .reveal{opacity:1;transform:none}
+}

@@ -5,13 +5,24 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>New Upload — Know what to upload next</title>
 <meta name="description" content="Paste your YouTube channel link and get data-based video ideas, hashtags and thumbnail ideas. Your first ideas are free.">
+<script>try{var t=localStorage.getItem("nu-theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="motion.css">
 </head>
 <body>
 <div id="site-nav"></div>
 
 <main>
   <div class="wrap hero">
+    <div class="floaters" aria-hidden="true">
+      <span class="chip c1">▶ 12.4K subscribers</span>
+      <span class="chip c2">📈 +18% views</span>
+      <span class="chip c3">#viral</span>
+      <span class="chip c4">💡 New idea ready</span>
+      <span class="chip c5">🔥 Trending</span>
+      <span class="chip c6">⏰ Best time: 6 PM</span>
+    </div>
     <h1>Your next video, <span class="grad">chosen from your own numbers.</span></h1>
     <p class="lead">Paste your channel link. New Upload looks at your recent videos, sees what is working, and suggests what to make next, with hashtags, best time to post and a thumbnail idea.</p>
     <div class="cta">
@@ -118,5 +129,6 @@
 
 <div id="site-footer"></div>
 <script src="app.js"></script>
+<script src="motion.js"></script>
 </body>
 </html>

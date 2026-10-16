@@ -8,6 +8,11 @@
   var unlocked = false;
   var last = null;
 
+  function cssVar(name, fallback) {
+    var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return v || fallback;
+  }
+
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
@@ -79,12 +84,14 @@
   }
 
   // ---- Rendering ----
-  function render() {
+  function render(fresh) {
     var d = last;
     var c = d.channel;
     $("cname").textContent = c.title;
     $("avatar").textContent = (c.title || "N").charAt(0).toUpperCase();
     $("demoPill").textContent = d.demo ? "Sample data shown" : "Live channel data";
+    $("stats").className = fresh ? "grid g4 enter" : "grid g4";
+    $("ideas").className = fresh ? "enter" : "";
 
     var trend = c.trend == null ? "-" : (c.trend >= 0 ? "+" : "") + c.trend + "%";
     var trendCls = c.trend == null ? "" : (c.trend >= 0 ? "up" : "down");
@@ -109,10 +116,23 @@
     }).join("");
 
     if (unlocked) document.querySelector(".unlock-box").classList.add("hidden");
-    drawChart(d.recent);
+    if (fresh) animateChart(d.recent); else drawChart(d.recent);
+    if (fresh && window.countUp) window.countUp($("stats"));
   }
 
-  function drawChart(points) {
+  function animateChart(points) {
+    if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) { drawChart(points); return; }
+    var start = null, dur = 1200;
+    function step(ts) {
+      if (start === null) start = ts;
+      var p = Math.min((ts - start) / dur, 1);
+      drawChart(points, 1 - Math.pow(1 - p, 3));
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function drawChart(points, prog) {
     var cv = $("chart");
     var dpr = window.devicePixelRatio || 1;
     var w = cv.clientWidth, h = cv.clientHeight;
@@ -121,17 +141,19 @@
     g.scale(dpr, dpr);
     g.clearRect(0, 0, w, h);
     if (!points || points.length < 2) {
-      g.fillStyle = "#9aa3bb"; g.font = "14px sans-serif";
+      g.fillStyle = cssVar("--muted", "#9aa3bb"); g.font = "14px sans-serif";
       g.fillText("Not enough video data to draw a chart.", 12, 30);
       return;
     }
+    var animating = typeof prog === "number" && prog < 1;
+    if (animating) { g.save(); g.beginPath(); g.rect(0, 0, w * prog, h); g.clip(); }
     var pad = { l: 44, r: 12, t: 14, b: 26 };
     var max = Math.max.apply(null, points.map(function (p) { return p.views; })) * 1.1 || 1;
     var iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
     function X(i) { return pad.l + (iw * i) / (points.length - 1); }
     function Y(v) { return pad.t + ih - (v / max) * ih; }
 
-    g.strokeStyle = "#262b3d"; g.fillStyle = "#9aa3bb"; g.font = "11px sans-serif"; g.lineWidth = 1;
+    g.strokeStyle = cssVar("--line", "#262b3d"); g.fillStyle = cssVar("--muted", "#9aa3bb"); g.font = "11px sans-serif"; g.lineWidth = 1;
     for (var k = 0; k <= 4; k++) {
       var val = (max / 4) * k, y = Y(val);
       g.beginPath(); g.moveTo(pad.l, y); g.lineTo(w - pad.r, y); g.stroke();
@@ -149,9 +171,10 @@
     g.stroke();
     g.fillStyle = "#ff8a3d";
     points.forEach(function (p, i) { g.beginPath(); g.arc(X(i), Y(p.views), 3.5, 0, 6.3); g.fill(); });
-    g.fillStyle = "#9aa3bb";
+    g.fillStyle = cssVar("--muted", "#9aa3bb");
     g.fillText("Oldest", pad.l, h - 8);
     g.fillText("Latest", w - pad.r - 30, h - 8);
+    if (animating) g.restore();
   }
 
   // ---- Analyze ----
@@ -179,12 +202,13 @@
         $("loading").classList.add("hidden");
         $("result").classList.remove("hidden");
         $("go").disabled = false;
-        render();
+        render(true);
         $("result").scrollIntoView({ behavior: "smooth", block: "start" });
       });
   });
 
   window.addEventListener("resize", function () { if (last) drawChart(last.recent); });
+  window.addEventListener("themechange", function () { if (last) drawChart(last.recent); });
 
   // ---- Unlock (payment hook) ----
   function startPayment() {
