@@ -1,621 +1,122 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
+<!doctype html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>New Upload: what do you need?</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<style>
-  :root {
-    box-sizing: border-box;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    --bg: #F1F5F8;
-    --surface: #FFFFFF;
-    --ink: #14212B;
-    --muted: #56666F;
-    --line: #D3DCE3;
-    --line-strong: #9FB0BC;
-    --accent: #1B5FC4;
-    --accent-ink: #FFFFFF;
-    --accent-soft: #E3EDFB;
-    --warn-bg: #FFF6E5;
-    --warn-line: #C97A08;
-    --focus: #1B5FC4;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #10181F;
-      --surface: #182530;
-      --ink: #E7EEF3;
-      --muted: #9AACB8;
-      --line: #2A3B48;
-      --line-strong: #4C6273;
-      --accent: #6FA8FF;
-      --accent-ink: #0B1620;
-      --accent-soft: #1C2E44;
-      --warn-bg: #2A2110;
-      --warn-line: #E0A040;
-      --focus: #9CC2FF;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #10181F;
-    --surface: #182530;
-    --ink: #E7EEF3;
-    --muted: #9AACB8;
-    --line: #2A3B48;
-    --line-strong: #4C6273;
-    --accent: #6FA8FF;
-    --accent-ink: #0B1620;
-    --accent-soft: #1C2E44;
-    --warn-bg: #2A2110;
-    --warn-line: #E0A040;
-    --focus: #9CC2FF;
-  }
-  html { scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 64px); background: var(--bg); }
-  *, *::before, *::after { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    font-size: 1rem;
-    line-height: 1.6;
-  }
-  h1, h2, h3 { font-family: "Bricolage Grotesque", "Hanken Grotesk", system-ui, sans-serif; margin: 0; line-height: 1.2; }
-  button, input { font: inherit; }
-  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
-  [hidden] { display: none !important; }
-
-  /* header */
-  .bar {
-    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
-    background: var(--bg); border-bottom: 1px solid var(--line);
-  }
-  .bar-in {
-    max-width: 760px; margin: 0 auto; padding: 8px 20px;
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  }
-  .brand {
-    min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--ink); cursor: pointer;
-    font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 700; font-size: 1.2rem;
-  }
-  .seg { display: inline-flex; border: 1.5px solid var(--line-strong); border-radius: 10px; overflow: hidden; }
-  .seg button {
-    min-height: 44px; padding: 0 14px; border: 0; background: transparent; color: var(--ink);
-    font-weight: 500; cursor: pointer;
-  }
-  .seg button + button { border-left: 1.5px solid var(--line-strong); }
-  .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
-
-  main { max-width: 760px; margin: 0 auto; padding: 0 20px 48px; }
-  .hero { padding: 44px 0 4px; }
-  .hero h1 { font-size: clamp(2rem, 7vw, 3rem); font-weight: 700; letter-spacing: -0.01em; }
-  .hero p { margin: 12px 0 0; max-width: 56ch; color: var(--muted); font-size: 1.05rem; }
-
-  /* buttons */
-  .btn {
-    min-height: 44px; padding: 0 20px; border-radius: 8px; cursor: pointer; font-weight: 600;
-    border: 1.5px solid var(--accent); background: var(--accent); color: var(--accent-ink);
-  }
-  .btn.ghost { background: transparent; color: var(--accent); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .link-btn {
-    min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--accent);
-    text-decoration: underline; cursor: pointer; font-weight: 500;
-  }
-
-  /* home options */
-  .options { margin-top: 28px; display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-  .opt { border-radius: 12px; padding: 22px; }
-  .opt h2 { font-size: 1.25rem; font-weight: 700; }
-  .opt p { margin: 8px 0 18px; color: var(--muted); }
-  .opt.live { background: var(--surface); border: 2px solid var(--accent); }
-  .opt.soon { border: 1.5px dashed var(--line-strong); }
-  .badge {
-    display: inline-block; margin-bottom: 8px; padding: 2px 10px; border-radius: 999px;
-    background: var(--accent-soft); color: var(--accent); font-size: 0.85rem; font-weight: 600;
-  }
-
-  .why { margin-top: 48px; }
-  .why h2 { font-size: 1.4rem; font-weight: 700; }
-  .why > p { margin: 6px 0 0; color: var(--muted); }
-  .reasons { list-style: none; margin: 16px 0 0; padding: 0; border-top: 1px solid var(--line); }
-  .reasons li { display: flex; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--line); }
-  .reasons .ico { font-size: 1.5rem; line-height: 1.3; flex: none; }
-  .reasons strong { display: block; font-weight: 600; }
-  .reasons span.d { color: var(--muted); }
-
-  .facts { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 10px; }
-  .facts li {
-    padding: 6px 14px; border-radius: 999px; border: 1px solid var(--line-strong);
-    background: var(--surface); font-weight: 500; font-size: 0.95rem;
-  }
-
-  /* idea page */
-  .analyze { margin-top: 24px; display: flex; flex-wrap: wrap; gap: 10px; }
-  .analyze input {
-    flex: 1 1 260px; min-height: 48px; padding: 0 14px; border-radius: 8px;
-    border: 1.5px solid var(--line-strong); background: var(--surface); color: var(--ink);
-  }
-  .analyze input::placeholder { color: var(--muted); }
-  .msg { margin: 10px 0 0; min-height: 1.6em; color: var(--muted); }
-  .free-note { margin: 14px 0 0; color: var(--muted); }
-  .free-note strong { color: var(--ink); }
-
-  .sect { margin-top: 44px; }
-  .sect h2 { font-size: 1.35rem; font-weight: 700; }
-  .sect > p.sub { margin: 6px 0 0; color: var(--muted); max-width: 60ch; }
-
-  .notice {
-    margin-top: 16px; padding: 16px 18px; border-radius: 10px; max-width: 66ch;
-    border: 1.5px dashed var(--warn-line); background: var(--warn-bg);
-  }
-  .notice h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; }
-  .notice p { margin: 0; }
-
-  .ack { margin-top: 16px; display: flex; gap: 12px; align-items: flex-start; cursor: pointer; max-width: 66ch; }
-  .ack input { width: 22px; height: 22px; margin: 2px 0 0; flex: none; accent-color: var(--accent); cursor: pointer; }
-  .ack-hint { margin: 6px 0 0 34px; font-size: 0.92rem; color: var(--muted); }
-
-  .packs { list-style: none; margin: 16px 0 0; padding: 0; border-top: 1px solid var(--line); }
-  .packs li {
-    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px;
-    padding: 16px 0; border-bottom: 1px solid var(--line);
-  }
-  .packs .info { flex: 1 1 260px; }
-  .packs .name { font-weight: 700; font-size: 1.1rem; font-family: "Bricolage Grotesque", system-ui, sans-serif; }
-  .packs .desc { color: var(--muted); }
-  .packs .buy { display: flex; align-items: center; gap: 14px; }
-  .price { font-family: "Bricolage Grotesque", system-ui, sans-serif; font-weight: 700; font-size: 1.4rem; }
-
-  .locked-line { margin: 26px 0 0; padding: 12px 16px; border-radius: 10px; background: var(--accent-soft); font-weight: 500; }
-  .ideas { margin-top: 14px; display: grid; gap: 12px; }
-  .idea { border: 1.5px dashed var(--line-strong); border-radius: 10px; padding: 16px 18px; background: var(--surface); }
-  .idea .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-  .idea .tag-label { font-size: 0.9rem; font-weight: 600; color: var(--accent); }
-  .idea h3 { font-size: 1.1rem; font-weight: 700; margin-top: 6px; }
-  .chips { margin: 8px 0 0; display: flex; gap: 6px; flex-wrap: wrap; }
-  .chips span { padding: 2px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 0.9rem; font-weight: 500; }
-  .idea p { margin: 8px 0 0; color: var(--muted); }
-  .idea .fine { font-size: 0.88rem; margin-top: 10px; }
-
-  .check { margin: 16px 0 0; padding-left: 20px; max-width: 66ch; }
-  .check li { margin: 0 0 8px; }
-
-  .disclaimer { margin-top: 36px; padding-left: 14px; border-left: 4px solid var(--warn-line); color: var(--muted); max-width: 66ch; }
-
-  /* refund page */
-  .policy h2 { font-size: 1.15rem; font-weight: 700; margin: 26px 0 6px; }
-  .policy p { margin: 0 0 10px; max-width: 66ch; }
-  .policy ul { margin: 0 0 6px; padding-left: 20px; max-width: 66ch; }
-  .policy li { margin: 0 0 8px; }
-
-  footer {
-    max-width: 760px; margin: 0 auto; padding: 24px 20px 40px; border-top: 1px solid var(--line);
-    color: var(--muted); font-size: 0.92rem;
-  }
-  footer p { margin: 0 0 4px; }
-
-  /* payment dialog */
-  dialog {
-    width: min(92vw, 380px); border: 1.5px solid var(--line-strong); border-radius: 14px;
-    background: var(--surface); color: var(--ink); padding: 22px;
-  }
-  dialog::backdrop { background: rgba(8, 14, 20, 0.6); }
-  dialog h2 { font-size: 1.25rem; font-weight: 700; }
-  dialog p { margin: 8px 0 0; color: var(--muted); }
-  .qr {
-    margin: 16px auto 0; width: 220px; max-width: 100%; aspect-ratio: 1 / 1;
-    border: 2px dashed var(--line-strong); border-radius: 12px;
-    display: flex; align-items: center; justify-content: center; text-align: center; padding: 16px;
-    color: var(--muted); font-weight: 500;
-  }
-  .dlg-actions { margin-top: 18px; display: flex; justify-content: flex-end; }
-</style>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>New Upload — Know what to upload next</title>
+<meta name="description" content="Paste your YouTube channel link and get data-based video ideas, hashtags and thumbnail ideas. Your first ideas are free.">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-
-<div class="bar">
-  <div class="bar-in">
-    <button type="button" class="brand" data-go="home">New Upload</button>
-    <div class="seg" role="group" aria-label="Theme">
-      <button type="button" id="th-light" aria-pressed="true">Light</button>
-      <button type="button" id="th-dark" aria-pressed="false">Dark</button>
-    </div>
-  </div>
-</div>
+<div id="site-nav"></div>
 
 <main>
-
-  <!-- HOME -->
-  <section id="view-home" data-title="New Upload: what do you need?">
-    <div class="hero">
-      <h1 tabindex="-1">What do you need?</h1>
-      <p>Pick an option. We'll show you exactly what fits your channel.</p>
+  <div class="wrap hero">
+    <h1>Your next video, <span class="grad">chosen from your own numbers.</span></h1>
+    <p class="lead">Paste your channel link. New Upload looks at your recent videos, sees what is working, and suggests what to make next, with hashtags, best time to post and a thumbnail idea.</p>
+    <div class="cta">
+      <a class="btn" href="idea.html">Analyze my channel free</a>
+      <a class="btn ghost" href="pricing.html">See pricing</a>
     </div>
+    <p class="note">First 2 video ideas are free. Unlock extras with a small one-time payment. No subscription.</p>
 
-    <div class="options">
-      <div class="opt live">
-        <h2>🎯 Next Video Idea</h2>
-        <p>Drop your channel link and we'll tell you what to post next: title, tags, all of it.</p>
-        <button type="button" class="btn" data-go="idea">Start</button>
+    <div class="mock">
+      <div class="row">
+        <div class="stat"><b>12.4K</b><span>Subscribers</span></div>
+        <div class="stat"><b>38.2K</b><span>Avg. views</span></div>
+        <div class="stat"><b style="color:var(--good)">+18%</b><span>Trend</span></div>
       </div>
-      <div class="opt soon">
-        <span class="badge">Coming soon</span>
-        <h2>🎨 Make a Thumbnail</h2>
-        <p>Enter your video title and AI generates a copyright-free thumbnail.</p>
-      </div>
+      <svg viewBox="0 0 600 160" role="img" aria-label="Sample views chart">
+        <defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#ff4d4d" stop-opacity=".35"/><stop offset="1" stop-color="#ff4d4d" stop-opacity="0"/></linearGradient></defs>
+        <path d="M0 120 L66 100 L133 110 L200 70 L266 85 L333 50 L400 65 L466 30 L533 45 L600 20 L600 160 L0 160Z" fill="url(#g)"/>
+        <path d="M0 120 L66 100 L133 110 L200 70 L266 85 L333 50 L400 65 L466 30 L533 45 L600 20" fill="none" stroke="#ff6a4d" stroke-width="3" stroke-linejoin="round"/>
+      </svg>
+      <div class="cap">Illustration, not real channel data</div>
     </div>
+  </div>
 
-    <div class="why">
-      <h2>Why creators use New Upload</h2>
-      <p>Built to turn your own channel data into a clear next move.</p>
-      <ul class="reasons">
-        <li><span class="ico" aria-hidden="true">📊</span><div><strong>Real channel data</strong><span class="d">We pull your actual recent videos, views and tags, not generic trends.</span></div></li>
-        <li><span class="ico" aria-hidden="true">🤖</span><div><strong>AI-powered ideas</strong><span class="d">Google Gemini studies what's working and suggests your next upload.</span></div></li>
-        <li><span class="ico" aria-hidden="true">🔒</span><div><strong>Secure payments</strong><span class="d">Every unlock is verified through Razorpay. No fake claims get through.</span></div></li>
-      </ul>
-    </div>
-
-    <ul class="facts" aria-label="What you get">
-      <li>Free first analysis</li>
-      <li>Title + tags included</li>
-      <li>Reasoning for every idea</li>
-      <li>Packs from ₹20</li>
-    </ul>
-  </section>
-
-  <!-- IDEA -->
-  <section id="view-idea" data-title="New Upload: know what to post next" hidden>
-    <div class="hero">
-      <h1 tabindex="-1">Know what to upload next.</h1>
-      <p>Paste your YouTube channel link. We look at what's actually working on your channel and suggest your next video's title and tags, based on your real numbers, not guesswork.</p>
-    </div>
-
-    <div class="analyze">
-      <input type="url" id="channel" placeholder="https://youtube.com/@yourchannel" aria-label="YouTube channel link" autocomplete="off">
-      <button type="button" class="btn" id="analyze">Analyze — free</button>
-    </div>
-    <p class="msg" id="msg" role="status" aria-live="polite"></p>
-    <p class="free-note">First analysis is <strong>free</strong>. One per network. After that, unlock more ideas below.</p>
-
-    <div class="sect">
-      <h2>Want more video ideas?</h2>
-      <p class="sub">Each pack analyzes your channel fresh and gives you that many ready-to-use ideas.</p>
-
-      <div class="notice">
-        <h3>What New Upload is, and what it isn't</h3>
-        <p>New Upload reads your channel's own data and suggests video ideas, titles and tags. It is a suggestion tool, not a promise of views, reach, subscribers or earnings. How a video performs also depends on your content, thumbnail, first 30 seconds, upload consistency, audience and YouTube's algorithm.</p>
-      </div>
-
-      <label class="ack">
-        <input type="checkbox" id="ack">
-        <span>I understand these are suggestions, not guaranteed results, and that unlocked ideas are non-refundable.</span>
-      </label>
-      <p class="ack-hint" id="ack-hint">Tick the box to unlock a pack.</p>
-
-      <ul class="packs">
-        <li>
-          <div class="info"><div class="name">Quick pack</div><div class="desc">2 video ideas with titles &amp; tags</div></div>
-          <div class="buy"><span class="price">₹20</span><button type="button" class="btn unlock" data-pack="quick" data-label="Quick pack" data-price="20" disabled>Unlock</button></div>
-        </li>
-        <li>
-          <div class="info"><div class="name">Week pack</div><div class="desc">7 video ideas, a full week of uploads planned</div></div>
-          <div class="buy"><span class="price">₹49</span><button type="button" class="btn unlock" data-pack="week" data-label="Week pack" data-price="49" disabled>Unlock</button></div>
-        </li>
-        <li>
-          <div class="info"><div class="name">Bumper pack</div><div class="desc">15 video ideas in one go</div></div>
-          <div class="buy"><span class="price">₹99</span><button type="button" class="btn unlock" data-pack="bumper" data-label="Bumper pack" data-price="99" disabled>Unlock</button></div>
-        </li>
-      </ul>
-
-      <p class="locked-line" id="locked-line" hidden>🔒 More ideas ready. Unlock a pack above to reveal them.</p>
-      <p class="msg" id="entitlement-msg" role="status" aria-live="polite"></p>
-
-      <div class="feedback-panel" id="feedback-panel" hidden style="border:1px solid #e2e2e2;border-radius:10px;padding:16px;margin:12px 0;">
-        <h3 style="margin:0 0 6px;">Payments launch soon 🚀</h3>
-        <p style="margin:0 0 10px;">We're testing New Upload with a small group first — paid packs aren't live yet. Tell us what you think so far, and you'll be among the first to get access when unlocks open.</p>
-        <textarea id="feedback-text" rows="3" placeholder="What did you like? What's missing or confusing?" style="width:100%;box-sizing:border-box;padding:8px;border-radius:8px;border:1px solid #ccc;font-family:inherit;"></textarea>
-        <div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
-          <button type="button" class="btn" id="feedback-submit">Send feedback</button>
-          <span id="feedback-status" role="status" aria-live="polite"></span>
+  <section>
+    <div class="wrap">
+      <h2>Four things that move a channel forward</h2>
+      <p class="sub">Everything starts from your real channel data, read the moment you ask.</p>
+      <div class="grid g2">
+        <div class="card">
+          <h3>Ideas for your next video</h3>
+          <p>Get topics you have not made yet, built around what already works on your channel.</p>
+          <span class="tag">#challenge</span><span class="tag">#gaming</span><span class="tag">#nodeath</span><span class="tag">#hardmode</span>
+        </div>
+        <div class="card">
+          <h3>See how your videos perform</h3>
+          <p>A clear chart of your recent uploads shows which videos pulled views and which did not.</p>
+        </div>
+        <div class="card">
+          <h3>Hashtags that fit the video</h3>
+          <p>Four trending and related hashtags for every idea, ready to paste.</p>
+        </div>
+        <div class="card">
+          <h3>Best time to post + thumbnail idea</h3>
+          <p>A suggested posting slot and a thumbnail concept for each video idea.</p>
         </div>
       </div>
-
-      <div class="ideas" id="ideas-list"></div>
-      <div class="trending-hashtags" id="trending-hashtags" style="margin-top:12px;"></div>
-    </div>
-
-    <div class="sect">
-      <h2>Not getting reach? Check these first</h2>
-      <p class="sub">Ideas, titles and tags give you a starting point. Before judging the result, look at:</p>
-      <ul class="check">
-        <li>The first 3 seconds. Does the video give a viewer a reason to stay?</li>
-        <li>Thumbnail and title. Do they make someone curious enough to click?</li>
-        <li>Sample size. Try the approach on 3 to 4 uploads before deciding. One video is not a pattern.</li>
-        <li>YouTube Studio → Analytics. Check impressions click-through rate and average view duration.</li>
-        <li>Early traction. Did your existing audience watch or share it in the first few hours?</li>
-        <li>Tags. They help YouTube understand your topic, but title, thumbnail and watch time matter more.</li>
-      </ul>
-    </div>
-
-    <p class="disclaimer">These are content suggestions based on your channel's own data, not a guarantee of views, subscribers or earnings. Growth still depends on your content, consistency and audience.</p>
-  </section>
-
-  <!-- REFUND -->
-  <section id="view-refund" data-title="New Upload: refund and cancellation policy" hidden>
-    <div class="hero">
-      <h1 tabindex="-1">Refund and cancellation policy</h1>
-      <p>New Upload sells digital video ideas. Ideas are delivered instantly once a pack is unlocked, so please read this before paying.</p>
-    </div>
-    <div class="policy">
-      <h2>When a refund is not given</h2>
-      <ul>
-        <li>Once ideas are revealed, the purchase can't be refunded.</li>
-        <li>We don't refund for low views, reach or subscribers. We suggest ideas from your channel data and do not guarantee results.</li>
-      </ul>
-      <h2>When a refund is given</h2>
-      <ul>
-        <li>Your payment went through but the ideas were not shown.</li>
-        <li>You were charged more than once for the same pack.</li>
-        <li>A technical error on our side stopped the pack from working.</li>
-      </ul>
-      <h2>How to ask</h2>
-      <p>Email [your support email] within [7] days with your payment ID and a short description. Approved refunds go back to the original payment method within [5 to 7] working days.</p>
     </div>
   </section>
 
+  <section>
+    <div class="wrap">
+      <h2>From link to plan in about twenty seconds</h2>
+      <p class="sub">No login, no password, nothing to connect.</p>
+      <div class="grid g3">
+        <div class="card"><div class="step-n">1</div><h3>Paste your channel link</h3><p>A channel URL or an @handle works.</p></div>
+        <div class="card"><div class="step-n">2</div><h3>We read your recent uploads</h3><p>Views, titles and trends from public YouTube data.</p></div>
+        <div class="card"><div class="step-n">3</div><h3>Get ideas you can film this week</h3><p>Start free. Unlock the extras when you want more.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Start free, pay only when you want more</h2>
+      <p class="sub">One-time payment. No subscription.</p>
+      <div class="grid g2">
+        <div class="card plan">
+          <h3>Free</h3>
+          <div class="price">₹0</div>
+          <ul class="tick"><li>Channel stats and performance chart</li><li>2 video ideas</li></ul>
+          <a class="btn ghost" href="idea.html">Analyze free</a>
+        </div>
+        <div class="card plan best">
+          <span class="badge">Unlock</span>
+          <h3>Full unlock</h3>
+          <div class="price">₹20 <small>one time</small></div>
+          <ul class="tick"><li>4 trending hashtags per idea</li><li>Best time to post</li><li>Thumbnail idea per video</li></ul>
+          <a class="btn" href="pricing.html">See details</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Questions creators ask</h2>
+      <p class="sub">&nbsp;</p>
+      <details><summary>Do you sell subscribers or views?</summary><p>No. We never sell or promise subscribers or views. We analyze public channel data and suggest what to make next.</p></details>
+      <details><summary>Is it really free to start?</summary><p>Yes. You get the channel report, the chart and 2 video ideas without paying.</p></details>
+      <details><summary>What do you need from my channel?</summary><p>Only the public link. We never ask for your YouTube login.</p></details>
+      <details><summary>How does paying work?</summary><p>Payments will go through Razorpay. Right now the site is in test mode, so no real payment is taken.</p></details>
+      <details><summary>Something went wrong. Who do I contact?</summary><p>Open the <a href="problem.html" style="color:var(--accent2)">Support page</a> and send us a message.</p></details>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <h2>Find out what to upload next</h2>
+      <p class="sub">It takes less than a minute and it is free to start.</p>
+      <a class="btn" href="idea.html">Analyze my channel free</a>
+    </div>
+  </section>
 </main>
 
-<footer>
-  <p>New Upload · built for creators who want a data-based next step, not a promise.</p>
-  <button type="button" class="link-btn" data-go="refund">Refund policy</button>
-</footer>
-
-<script>
-(function () {
-  var root = document.documentElement;
-
-  /* theme */
-  function applyTheme(t) {
-    root.setAttribute("data-theme", t);
-    document.getElementById("th-light").setAttribute("aria-pressed", t === "light" ? "true" : "false");
-    document.getElementById("th-dark").setAttribute("aria-pressed", t === "dark" ? "true" : "false");
-  }
-  var saved = null;
-  try { saved = localStorage.getItem("nu-theme"); } catch (e) { saved = null; }
-  var start = saved;
-  if (start !== "light" && start !== "dark") {
-    start = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
-  }
-  applyTheme(start);
-  function pick(t) {
-    applyTheme(t);
-    try { localStorage.setItem("nu-theme", t); } catch (e) {}
-  }
-  document.getElementById("th-light").addEventListener("click", function () { pick("light"); });
-  document.getElementById("th-dark").addEventListener("click", function () { pick("dark"); });
-
-  /* views */
-  var names = ["home", "idea", "refund"];
-  function show(name) {
-    names.forEach(function (n) {
-      document.getElementById("view-" + n).hidden = (n !== name);
-    });
-    var v = document.getElementById("view-" + name);
-    document.title = v.getAttribute("data-title");
-    window.scrollTo(0, 0);
-    var h = v.querySelector("h1");
-    if (h) { h.focus({ preventScroll: true }); }
-  }
-  Array.prototype.forEach.call(document.querySelectorAll("[data-go]"), function (el) {
-    el.addEventListener("click", function () { show(el.getAttribute("data-go")); });
-  });
-
-  /* ---- backend-connected idea flow ---- */
-  // Flip this to true when Razorpay is ready to go live. While false, unlock
-  // buttons collect feedback instead of starting a real payment — everything
-  // on the payment side (api/create-order.js, api/razorpay-webhook.js, etc.)
-  // stays in the project untouched, ready to switch on later.
-  var PAYMENTS_ENABLED = false;
-  var channel = document.getElementById("channel");
-  var msg = document.getElementById("msg");
-  var ideasList = document.getElementById("ideas-list");
-  var trendingHashtagsEl = document.getElementById("trending-hashtags");
-  var lockedLine = document.getElementById("locked-line");
-  var entitlementMsg = document.getElementById("entitlement-msg");
-  var currentChannelKey = null;
-
-  function ideaCard(idea) {
-    var chips = idea.tags.map(function (t) { return "<span>" + t + "</span>"; }).join("");
-    var thumbs = (idea.thumbnails || [])
-      .map(function (src) {
-        return '<img src="' + src + '" alt="Thumbnail concept" style="width:150px;height:84px;object-fit:cover;border-radius:8px;margin:0 6px 6px 0;">';
-      })
-      .join("");
-    return (
-      '<div class="idea">' +
-        '<div class="top"><span class="tag-label">Idea</span></div>' +
-        "<h3>" + idea.title + "</h3>" +
-        '<div class="thumb-row" style="display:flex;flex-wrap:wrap;margin:8px 0;">' + thumbs + "</div>" +
-        '<div class="chips">' + chips + "</div>" +
-        "<p>" + idea.reasoning + "</p>" +
-        '<p class="fine">Thumbnails are layout/color concepts to react to, not final art. Data-based suggestion, not a guaranteed result — performance also depends on how you make and present the video.</p>' +
-      "</div>"
-    );
-  }
-
-  function renderIdeas(ideas, trendingHashtags) {
-    ideasList.innerHTML = ideas.map(ideaCard).join("");
-    if (trendingHashtags && trendingHashtags.length) {
-      trendingHashtagsEl.innerHTML =
-        '<p style="margin:0 0 6px;font-weight:600;">Trending for your niche</p><div class="chips">' +
-        trendingHashtags.map(function (t) { return "<span>" + t + "</span>"; }).join("") +
-        "</div>";
-    } else {
-      trendingHashtagsEl.innerHTML = "";
-    }
-  }
-
-  function setUnlocksEnabled(enabled) {
-    Array.prototype.forEach.call(unlocks, function (b) {
-      b.disabled = !enabled || !ack.checked;
-    });
-  }
-
-  document.getElementById("analyze").addEventListener("click", function () {
-    var url = channel.value.trim();
-    if (!url) {
-      msg.textContent = "Paste your YouTube channel link first.";
-      channel.focus();
-      return;
-    }
-    msg.textContent = "Checking your channel...";
-    fetch("/api/free-check", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ channelUrl: url })
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        currentChannelKey = data.channelKey || currentChannelKey;
-        setUnlocksEnabled(!!currentChannelKey);
-        if (data.allowed) {
-          msg.textContent = "Here's what we found for your channel:";
-          renderIdeas(data.ideas, data.trendingHashtags);
-          lockedLine.hidden = false;
-        } else if (data.reason === "free_used") {
-          msg.textContent = "Free analysis for this channel is already used. Unlock a pack below for more ideas.";
-          lockedLine.hidden = false;
-        } else {
-          msg.textContent = data.error || "Something went wrong. Try again.";
-        }
-      })
-      .catch(function () {
-        msg.textContent = "Could not reach the server. Try again.";
-      });
-  });
-
-  /* acknowledgement gates the unlock buttons (in addition to having a channel checked) */
-  var ack = document.getElementById("ack");
-  var hint = document.getElementById("ack-hint");
-  var unlocks = document.querySelectorAll(".unlock");
-  ack.addEventListener("change", function () {
-    hint.hidden = ack.checked;
-    setUnlocksEnabled(!!currentChannelKey);
-  });
-  hint.hidden = ack.checked;
-  setUnlocksEnabled(false);
-
-  /* payment: create a real order, open Razorpay checkout, then poll for the webhook to confirm */
-  function pollEntitlement(attemptsLeft) {
-    if (attemptsLeft <= 0) {
-      entitlementMsg.textContent = "Payment received. If ideas don't appear in a minute, refresh the page.";
-      return;
-    }
-    fetch("/api/check-entitlement?channelKey=" + encodeURIComponent(currentChannelKey))
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        if (data.ideasRemaining > 0) {
-          return fetch("/api/redeem-ideas", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ channelKey: currentChannelKey })
-          })
-            .then(function (r) { return r.json(); })
-            .then(function (redeemed) {
-              if (redeemed.redeemed) {
-                renderIdeas(redeemed.ideas, redeemed.trendingHashtags);
-                lockedLine.hidden = true;
-                entitlementMsg.textContent = "Unlocked. Here are your ideas.";
-              }
-            });
-        }
-        setTimeout(function () { pollEntitlement(attemptsLeft - 1); }, 2000);
-      })
-      .catch(function () {
-        setTimeout(function () { pollEntitlement(attemptsLeft - 1); }, 2000);
-      });
-  }
-
-  var feedbackPanel = document.getElementById("feedback-panel");
-  var feedbackText = document.getElementById("feedback-text");
-  var feedbackStatus = document.getElementById("feedback-status");
-
-  document.getElementById("feedback-submit").addEventListener("click", function () {
-    var text = feedbackText.value.trim();
-    if (!text) {
-      feedbackStatus.textContent = "Likho kuch feedback pehle.";
-      return;
-    }
-    feedbackStatus.textContent = "Sending...";
-    fetch("/api/feedback", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ channelKey: currentChannelKey, message: text })
-    })
-      .then(function (r) { return r.json(); })
-      .then(function () {
-        feedbackStatus.textContent = "Thanks! Feedback received.";
-        feedbackText.value = "";
-      })
-      .catch(function () {
-        feedbackStatus.textContent = "Could not send. Try again.";
-      });
-  });
-
-  Array.prototype.forEach.call(unlocks, function (b) {
-    b.addEventListener("click", function () {
-      if (!currentChannelKey) {
-        msg.textContent = "Analyze your channel first, then unlock a pack.";
-        return;
-      }
-
-      if (!PAYMENTS_ENABLED) {
-        feedbackPanel.hidden = false;
-        feedbackPanel.scrollIntoView({ behavior: "smooth", block: "center" });
-        feedbackText.focus();
-        return;
-      }
-
-      entitlementMsg.textContent = "Starting payment...";
-      fetch("/api/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ channelKey: currentChannelKey, pack: b.getAttribute("data-pack") })
-      })
-        .then(function (r) { return r.json(); })
-        .then(function (order) {
-          if (!order.orderId) {
-            entitlementMsg.textContent = order.error || "Could not start payment.";
-            return;
-          }
-          var rzp = new Razorpay({
-            key: order.keyId,
-            amount: order.amount,
-            currency: "INR",
-            name: "New Upload",
-            description: order.packLabel,
-            order_id: order.orderId,
-            handler: function () {
-              entitlementMsg.textContent = "Payment received, verifying...";
-              pollEntitlement(15);
-            },
-            theme: { color: "#1B5FC4" }
-          });
-          rzp.open();
-        })
-        .catch(function () {
-          entitlementMsg.textContent = "Could not start payment. Try again.";
-        });
-    });
-  });
-})();
-</script>
+<div id="site-footer"></div>
+<script src="app.js"></script>
 </body>
 </html>

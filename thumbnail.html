@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thumbnails — New Upload</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="site-nav"></div>
+<main>
+  <div class="wrap hero">
+    <h1 style="font-size:clamp(30px,5vw,48px)">Thumbnail <span class="grad">ideas</span></h1>
+    <p class="lead">Type your video title and get a thumbnail concept: what to show, what text to use and which colors work.</p>
+    <form class="finder" id="tform">
+      <input id="title" placeholder="e.g. I Tried the Hardest Level for 24 Hours" maxlength="100" required>
+      <button class="btn" type="submit">Get idea</button>
+    </form>
+  </div>
+  <div class="wrap" style="padding-bottom:50px">
+    <div class="card hidden" id="out" style="max-width:680px;margin:0 auto">
+      <div id="thumb" style="aspect-ratio:16/9;border-radius:12px;display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;font-weight:900;font-size:clamp(22px,5vw,42px);line-height:1.1;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.35)"></div>
+      <p id="tip" style="margin-top:14px"></p>
+      <p class="note">This is a quick concept preview. AI-generated thumbnails are coming soon.</p>
+    </div>
+  </div>
+</main>
+<div id="site-footer"></div>
+<script src="app.js"></script>
+<script>
+(function(){
+  var palettes=[["#ff3b3b","#ffb400","Red and yellow: highest contrast, great for challenges."],
+    ["#1e5bff","#00d0ff","Blue and cyan: clean and trustworthy, good for tutorials."],
+    ["#7a2cff","#ff4fa3","Purple and pink: stands out in gaming and entertainment feeds."],
+    ["#0fa968","#c6ff3d","Green and lime: energetic, good for fitness and tech."]];
+  document.getElementById("tform").addEventListener("submit",function(e){
+    e.preventDefault();
+    var t=document.getElementById("title").value.trim(); if(!t) return;
+    var words=t.split(/\s+/); var short=words.slice(0,4).join(" ").toUpperCase();
+    var p=palettes[(t.length+words.length)%palettes.length];
+    var th=document.getElementById("thumb");
+    th.style.background="linear-gradient(135deg,"+p[0]+","+p[1]+")";
+    th.textContent=short;
+    document.getElementById("tip").textContent="Use 3 to 4 big words, one expressive face or object, and keep the background simple. "+p[2];
+    document.getElementById("out").classList.remove("hidden");
+  });
+})();
+</script>
+</body>
+</html>

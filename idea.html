@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Video ideas — New Upload</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="site-nav"></div>
+
+<main class="wrap">
+  <div class="hero" style="padding-bottom:24px">
+    <h1 style="font-size:clamp(28px,5vw,46px)">Analyze your channel</h1>
+    <p class="lead">Paste your YouTube channel link or @handle.</p>
+    <form class="finder" id="form">
+      <input id="channel" placeholder="https://youtube.com/@yourchannel" autocomplete="off" required>
+      <button class="btn" id="go" type="submit">Analyze free</button>
+    </form>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div id="loading" class="hidden"><div class="spinner"></div><p class="msg" style="text-align:center">Reading your recent uploads...</p></div>
+
+  <div id="result" class="hidden">
+    <div class="chan">
+      <div class="avatar" id="avatar">N</div>
+      <div><h2 id="cname" style="margin:0;font-size:24px"></h2><span class="pill" id="demoPill"></span></div>
+    </div>
+
+    <div class="grid g4" id="stats"></div>
+
+    <div class="card" style="margin-top:18px">
+      <h3>Recent video performance</h3>
+      <canvas id="chart"></canvas>
+    </div>
+
+    <h2 style="margin:34px 0 14px;font-size:26px">Your next video ideas</h2>
+    <div id="ideas"></div>
+
+    <div class="unlock-box card">
+      <h3>Unlock hashtags, best time to post and thumbnail ideas</h3>
+      <p>4 trending hashtags, a best-time-to-post slot and a thumbnail idea for every video idea.</p>
+      <p style="margin:12px 0"><b style="font-size:24px">₹20</b> <span class="pill">one time</span></p>
+      <button class="btn" id="unlock">Unlock for ₹20</button>
+      <p class="note" id="payNote">Test mode: payments are not live yet.</p>
+    </div>
+
+    <div class="card" style="margin-top:28px">
+      <h3>Tell us what you think</h3>
+      <p style="margin-bottom:12px">Your feedback helps us improve New Upload.</p>
+      <textarea class="field" id="fb" placeholder="Write your feedback here..."></textarea>
+      <div style="margin-top:12px"><button class="btn small" id="sendFb">Send feedback</button> <span class="msg" id="fbMsg"></span></div>
+    </div>
+  </div>
+</main>
+
+<div id="site-footer"></div>
+<script src="app.js"></script>
+<script src="idea.js"></script>
+</body>
+</html>
